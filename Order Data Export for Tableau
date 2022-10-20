@@ -48,7 +48,7 @@ end as 'discount_user_type,
 
 
 FROM_UNIXTIME( dc.valid_start, "%Y%m%d" ) as 'discount_valid_start',
-FROM_UNIXTIME( dc.valid_end, "%Y%m%d" ) as 'discount_valid_end',
+FROM_UNIXTIME( dc.valid_end, "%Y%m%d" ) as 'discount_valid_end'
 
  	
 from tb_order o
