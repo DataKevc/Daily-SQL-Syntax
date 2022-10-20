@@ -52,7 +52,6 @@ FROM_UNIXTIME( dc.valid_end, "%Y%m%d" ) as 'discount_valid_end'
 
  	
 from tb_order o
-left join tb_order_address oa on o.id = oa.order_id
 left join tb_user u on o.user_id = u.id
 left join tb_store s on o.store_id = s.id
 left join tb_discount_code dc on dc.id = o.discount_code_id
