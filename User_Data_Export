@@ -1,0 +1,38 @@
+Select
+u.id as 'User_id',
+u.phone,
+u.email,
+FROM_UNIXTIME( u.last_login_time, '%Y/%m/%d %H:%i:%s'  ) as 'last_login_date',
+FROM_UNIXTIME( u.create_time, '%Y/%m/%d %H:%i:%s'  ) as 'user_create_date',
+u.member_level,
+case
+when u.sex = 1 then 'M'
+when u.sex = 2 then 'F' 
+else 'other' 
+end as 'sex',
+FROM_UNIXTIME( u.birthday, '%Y/%m/%d'  ) as 'birth_day',
+FROM_UNIXTIME( x.first_order_time, '%Y/%m/%d %H:%i:%s' ) as 'user_first_order_date'
+
+FROM
+tb_user u
+left join tb_order o on u.id=o.user_id
+left join
+(select
+ux.id as user_id,
+ox.create_time as first_order_time
+from tb_user ux
+left join tb_order ox on ox.user_id = ux.id
+left join tb_store sx on ox.store_id = sx.id
+where
+	sx.is_tester = 0
+	and (ox.order_status = 2 or ox.order_status = 3)
+	and ox.food_origin_price != 0
+group by ux.id
+) x on x.user_id = u.id
+
+
+where
+u.is_tester = 0
+u.id is not null
+
+group by u.id
