@@ -1,0 +1,68 @@
+SET time_zone = '+8:00';
+SET @today := DATE_FORMAT(CURDATE(),"%Y%m%d");
+
+select
+o.id as 'Order_id',
+oe.is_first_buy  as 'is_first_buy',
+s.id as 'Store_id',
+u.id as 'User_id',
+u.email,
+u.phone,
+FROM_UNIXTIME( u.last_login_time, '%Y/%m/%d %H:%i:%s'  ) as 'user_last_login_time',
+FROM_UNIXTIME( u.create_time, '%Y/%m/%d %H:%i:%s'  ) as 'user_create_time',
+case
+when u.sex = 1 then 'M'
+when u.sex = 2 then 'F' 
+else 'NA' 
+end as 'sex',
+
+FROM_UNIXTIME( u.birthday, '%Y/%m/%d'  ) as 'birth_day',
+
+s.name as 'store_name',
+o.food_price as 'food_price',
+o.service_fee as 'service_fee',
+
+	
+DATE_FORMAT( FROM_UNIXTIME( o.create_time ), '%Y/%m/%d %H:%i:%s' ) as 'order_date',
+if(o.order_status != 3 and o.finish_time > o.create_time, (DATE_FORMAT( FROM_UNIXTIME( o.finish_time ), '%Y/%m/%d %H:%i:%s' )), null) as 'order_complete_date',
+
+case 
+when o.order_status = 2 then 'completed'
+when o.order_status = 3 then 'canceled'
+else ''
+end as 'order_status',
+
+o.discount_code_id,
+dc.code as 'discount_code_name',
+
+case
+when dc.type = 1 then 'member_discount'
+when dc.type = 2 then 'cash_discount'
+else 'other'
+end as 'discount_type',
+
+case
+when dc.user_type = 0 then 'all'
+when dc.user_type = 1 then 'new_user'
+when dc.user_type = 2 then 'existing_user'
+end as 'discount_user_type,
+
+
+FROM_UNIXTIME( dc.valid_start, "%Y%m%d" ) as 'discount_valid_start',
+FROM_UNIXTIME( dc.valid_end, "%Y%m%d" ) as 'discount_valid_end',
+
+ 	
+from tb_order o
+left join tb_order_address oa on o.id = oa.order_id
+left join tb_user u on o.user_id = u.id
+left join tb_store s on o.store_id = s.id
+left join tb_discount_code dc on dc.id = o.discount_code_id
+left join tb_order_extra oe on o.id = oe.order_id
+
+where
+	FROM_UNIXTIME( o.create_time, "%Y%m%d" ) BETWEEN 20220101 AND @today
+	and s.is_tester = 0
+	and (o.order_status = 2 or o.order_status = 3)
+	
+group by o.id
+   
