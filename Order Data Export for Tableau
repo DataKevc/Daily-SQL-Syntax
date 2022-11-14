@@ -15,6 +15,8 @@ when u.sex = 2 then 'F'
 else 'NA' 
 end as 'sex',
 
+FROM_UNIXTIME( x.first_order_time, '%Y/%m/%d %H:%i:%s' ) as 'user_first_order_time',
+
 FROM_UNIXTIME( u.birthday, '%Y/%m/%d'  ) as 'birth_day',
 
 s.name as 'store_name',
@@ -56,6 +58,19 @@ left join tb_user u on o.user_id = u.id
 left join tb_store s on o.store_id = s.id
 left join tb_discount_code dc on dc.id = o.discount_code_id
 left join tb_order_extra oe on o.id = oe.order_id
+left join
+(select
+ux.id as user_id,
+ox.create_time as first_order_time
+from tb_user ux
+left join tb_order ox on ox.user_id = ux.id
+left join tb_store sx on ox.store_id = sx.id
+where
+	sx.is_tester = 0
+	and (ox.order_status = 2 or ox.order_status = 3)
+	and ox.food_origin_price != 0
+group by ux.id
+) x on x.user_id = u.id
 
 where
 	FROM_UNIXTIME( o.create_time, "%Y%m%d" ) BETWEEN 20220101 AND @today
