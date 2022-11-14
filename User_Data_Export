@@ -1,3 +1,6 @@
+SET @today := DATE_FORMAT(CURDATE(),"%Y%m%d");
+SET @yesterday := DATE_FORMAT(DATE_SUB(CURDATE(),INTERVAL 1 DAY),"%Y%m%d");
+
 Select
 u.id as 'User_id',
 u.phone,
@@ -39,9 +42,8 @@ where
 group by ux.id
 ) x on x.user_id = u.id
 
-
 where
-u.is_tester = 0
-u.id is not null
+u.gid_bar_code is not null
+and FROM_UNIXTIME(u.create_time , '%Y%m%d' ) <= @yesterday
 
 group by u.id
