@@ -11,11 +11,20 @@ when u.sex = 2 then 'F'
 else 'other' 
 end as 'sex',
 FROM_UNIXTIME( u.birthday, '%Y/%m/%d'  ) as 'birth_day',
-FROM_UNIXTIME( x.first_order_time, '%Y/%m/%d %H:%i:%s' ) as 'user_first_order_date'
+FROM_UNIXTIME( x.first_order_time, '%Y/%m/%d %H:%i:%s' ) as 'user_first_order_date',
+
+if (sub.end_at is null or sub.end_at > @yesterdaylastsec, u.subscription_id, null) as 'subscription_id',
+if (sub.end_at is null or sub.end_at > @yesterdaylastsec, sub.plan, null) as 'subscription_plan',
+DATE_FORMAT(sub.payment_at , '%Y/%m/%d %H:%i:%s' )as 'sub_start_time',
+DATE_FORMAT(sub.end_at , '%Y/%m/%d %H:%i:%s' )  as 'sub_end_time',
+
+if(sub.plan != 0, sp.promote_price, 'null') end as 'sub_fee'
+
 
 FROM
 tb_user u
-left join tb_order o on u.id=o.user_id
+left join tb_subscription sub on u.subscription_id = sub.id
+left join tb_subscription_promotion sp on sp.plan = sub.plan and sp.begin_at <= sub.payment_at and sp.end_at >= sub.payment_at
 left join
 (select
 ux.id as user_id,
