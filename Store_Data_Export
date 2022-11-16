@@ -1,0 +1,29 @@
+SELECT
+s.id,
+replace(s.`name`,'\t','') AS 'Store_name',
+
+FROM_UNIXTIME( s.create_time, '%Y/%m/%d' ) as 'create_date',
+s.status,
+s.is_tester,
+(select group_concat(name) from tb_store_type st left join tb_store_store_type sst on st.id = sst.store_type_id where sst.store_id = s.id and type = 1 group by sst.store_id, sst.type) as 'main_category',
+(select group_concat(name) from tb_store_type st left join tb_store_store_type sst on st.id = sst.store_type_id where sst.store_id = s.id and type = 0 group by sst.store_id, sst.type) as 'sub_category',
+c.name,
+a.area,
+replace(replace(s.address,'\r\n',''),'\t','') AS 'full_address',
+sd.orpen_range,
+payee_name,
+payee_account,
+invoice_issue_type
+
+FROM
+
+tb_store s
+JOIN tb_store_area a on s.store_area_id = a.id
+JOIN tb_store_city c on a.city_id = c.id 
+left JOIN tb_store_delivery sd on sd.store_id = s.id
+left join tb_brand b on s.brand_id = b.id
+left join tb_store_extra se on se.store_id = s.id
+
+WHERE
+s.apply_status = 1
+ORDER BY id
