@@ -20,9 +20,9 @@ FROM
 tb_store s
 JOIN tb_store_area a on s.store_area_id = a.id
 JOIN tb_store_city c on a.city_id = c.id 
-left JOIN tb_store_delivery sd on sd.store_id = s.id
-left join tb_brand b on s.brand_id = b.id
-left join tb_store_extra se on se.store_id = s.id
+LEFT JOIN tb_store_delivery sd on sd.store_id = s.id
+LEFT JOIN tb_brand b on s.brand_id = b.id
+LEFT JOIN tb_store_extra se on se.store_id = s.id
 
 WHERE
 s.apply_status = 1
