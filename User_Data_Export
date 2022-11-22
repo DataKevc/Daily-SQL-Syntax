@@ -14,7 +14,16 @@ when u.sex = 2 then 'F'
 else 'other' 
 end as 'sex',
 FROM_UNIXTIME( u.birthday, '%Y/%m/%d'  ) as 'birth_day',
-FROM_UNIXTIME( x.first_order_time, '%Y/%m/%d %H:%i:%s' ) as 'user_first_order_date',
+(select
+DATE_FORMAT( FROM_UNIXTIME( ox.create_time ), '%Y/%m/%d %H:%i:%s' )
+from tb_order ox
+left join tb_store sx on ox.store_id = sx.id
+where sx.is_tester = 0 
+and (ox.order_status = 2 or ox.order_status = 3) 
+and ox.food_origin_price != 0 
+and ox.user_id = u.id 
+order by ox.id asc 
+limit 1) as 'user_first_order_date',
 
 if (sub.end_at is null or sub.end_at > @yesterdaylastsec, u.subscription_id, null) as 'subscription_id',
 if (sub.end_at is null or sub.end_at > @yesterdaylastsec, sub.plan, null) as 'subscription_plan',
@@ -28,19 +37,6 @@ FROM
 tb_user u
 left join tb_subscription sub on u.subscription_id = sub.id
 left join tb_subscription_promotion sp on sp.plan = sub.plan and sp.begin_at <= sub.payment_at and sp.end_at >= sub.payment_at
-left join
-(select
-ux.id as user_id,
-ox.create_time as first_order_time
-from tb_user ux
-left join tb_order ox on ox.user_id = ux.id
-left join tb_store sx on ox.store_id = sx.id
-where
-	sx.is_tester = 0
-	and (ox.order_status = 2 or ox.order_status = 3)
-	and ox.food_origin_price != 0
-group by ux.id
-) x on x.user_id = u.id
 
 where
 u.gid_bar_code is not null
